@@ -27,12 +27,15 @@ namespace FilesSearcherProject
 
             try
             {
-                FileSearchBase fs = FileSearchFactory.GetSearchAgent(FileType.TXT);
-                fs.Search(fullFilePath, searchString, out results);
-
-                foreach (var item in results)
+                FileSearchBase fs = FileSearchFactory.GetSearchAgent(FileType.PDF);
+                
+                int found = fs.Search(fullFilePath, searchString, out results);
+                if (found > 0)
                 {
-                    Console.WriteLine("Row: {0}", item);
+                    foreach (var item in results)
+                    {
+                        Console.WriteLine("Row: {0}", item);
+                    }
                 }
             }
             catch (Exception e)

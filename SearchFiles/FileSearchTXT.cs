@@ -52,7 +52,7 @@ namespace FilesSearcherProject
             catch (Exception e)
             {
                 Console.WriteLine("The Process failed: {0}", e.ToString());
-                throw e;    // propagate exception to caller;
+                throw;    // propagate exception to caller;
             }
 
             searchResults = this.GetRows;
