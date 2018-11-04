@@ -7,42 +7,8 @@ using System.Threading.Tasks;
 
 namespace FilesSearcherProject
 {
-    interface IFileSearch
+    public class FileSearchBase
     {
-        int Search(string fileNamePath, string searchStr, out IList<int> searchResults);
-    }
-
-    public class FileSearchBase : IFileSearch
-    {
-        #region Private Members
-
-        protected List<int> foundRowsList = null;
-
-        #endregion
-
-        #region Class Properties
-        public string FileName { get; private set; }
-        public string FileExt { get; private set; }
-        public string FilePath { get; private set; }
-
-        // A property that returns a readonly reference to the list of rows per file, where the search string was found.
-        public ref readonly List<int> GetRows { get { return ref foundRowsList; } }
-
-        /// <summary>
-        /// At first found occurance, instanciate the List holding the line found numbers.
-        /// </summary>
-        /// <param name="row"></param>
-        public void AddFound(int row)
-        {
-            if (foundRowsList == null)
-            {
-                foundRowsList = new List<int>();
-            }
-
-            foundRowsList.Add(row);
-        }
-        #endregion
-
         // Constructor
         public FileSearchBase() { }
 
@@ -57,28 +23,19 @@ namespace FilesSearcherProject
                 throw new ArgumentException("Invalid Argument: ", nameof(sensitiveText));
         }
 
-        protected void CheckFile(string fileNamePath)
+        public virtual IList<FileInfo> SearchSync(FileInfo fileInfo, string searchStr)
         {
-            if (fileNamePath == null)
-                throw new ArgumentNullException(nameof(fileNamePath), "Argumaent is null.");
+            List<FileInfo> foundFileList = new List<FileInfo>();
 
-            if (fileNamePath == String.Empty)
-                throw new ArgumentException("Invalid Argument: ", nameof(fileNamePath));
+            SearchSync(fileInfo, searchStr, foundFileList);
 
-            FileName = Path.GetFileName(fileNamePath);
-            FileExt = Path.GetExtension(fileNamePath);
-            FilePath = Path.GetDirectoryName(fileNamePath);
-
-            Console.WriteLine("File Name: {0}", FileName);
-            Console.WriteLine("File Ext : {0}", FileExt);
-            Console.WriteLine("File Path: {0}", FilePath);
+            return foundFileList;
         }
 
-        public virtual int Search(string fileNamePath, string searchStr, out IList<int> searchResults)
+        protected virtual void SearchSync(FileInfo fileInfo, string searchStr, IList<FileInfo> foundFileList)
         {
             throw new NotImplementedException();
         }
-
         #endregion
     }
 }

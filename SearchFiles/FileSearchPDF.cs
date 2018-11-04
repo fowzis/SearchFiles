@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -17,15 +18,14 @@ namespace FilesSearcherProject
         /// <summary>
         /// Search PDF File
         /// </summary>
-        /// <param name="fileNamePath"></param>
+        /// <param name="fileInfo"></param>
         /// <param name="searchStr"></param>
-        /// <param name="searchResults"></param>
+        /// <param name="foundFileList"></param>
         /// <returns></returns>
-        public override int Search(string fileNamePath, string searchStr, out IList<int> searchResults)
+        protected override void SearchSync(FileInfo fileInfo, string searchStr, IList<FileInfo> foundFileList)
         {
             try
             {
-                CheckFile(fileNamePath);
                 CheckSearchString(searchStr);
             }
             catch (Exception e)
@@ -35,32 +35,33 @@ namespace FilesSearcherProject
             }
 
             // Validate the file is still there
-            if (!File.Exists(fileNamePath))
+            if (!fileInfo.Exists)
             {
-                throw new FileNotFoundException(fileNamePath);
+                throw new FileNotFoundException(fileInfo.FullName);
             }
 
             try
             {
-                PdfReader pdfReader = new PdfReader(fileNamePath);
-                ITextExtractionStrategy strategy = new SimpleTextExtractionStrategy();
-
-                for (int page = 1; page < pdfReader.NumberOfPages; page++)
+                using (PdfReader pdfReader = new PdfReader(fileInfo.FullName))
                 {
-                    string currentPageText = PdfTextExtractor.GetTextFromPage(pdfReader, 5, strategy);
-                    if (currentPageText.Contains(searchStr))
+                    ITextExtractionStrategy strategy = new SimpleTextExtractionStrategy();
+
+                    for (int page = 1; page < pdfReader.NumberOfPages; page++)
                     {
-                        this.AddFound(5);
+                        string currentPageText = PdfTextExtractor.GetTextFromPage(pdfReader, 5, strategy);
+                        if (currentPageText.ToLower().Contains(searchStr.ToLower()))
+                        {
+                            foundFileList.Add(fileInfo);
+                            break;
+                        }
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Console.WriteLine(ex.ToString());
                 throw;
             }
-
-            searchResults = this.GetRows;
-            return searchResults.Count;
         }
 
         /// <summary>

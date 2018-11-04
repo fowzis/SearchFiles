@@ -9,11 +9,10 @@ namespace FilesSearcherProject
 {
     public class FileSearchTXT : FileSearchBase
     {
-        public override int Search(string fileNamePath, string searchStr, out IList<int> searchResults)
+        protected override void SearchSync(FileInfo fileInfo, string searchStr, IList<FileInfo> foundFileList)
         {
             try
             {
-                CheckFile(fileNamePath);
                 CheckSearchString(searchStr);
             }
             catch (Exception e)
@@ -23,28 +22,26 @@ namespace FilesSearcherProject
             }
 
             // Validate the file is still there
-            if (!File.Exists(fileNamePath))
+            if (!fileInfo.Exists)
             {
-                throw new FileNotFoundException(fileNamePath);
+                throw new FileNotFoundException(fileInfo.FullName);
             }
 
             try
             {
                 // Open the file for reading in Text mode.
-                using (StreamReader sr = new StreamReader(fileNamePath))
+                using (StreamReader sr = new StreamReader(fileInfo.FullName))
                 {
                     string line;
-                    int lineNum = 0;
 
                     // Search for the required sensitive text
                     while ((line = sr.ReadLine()) != null)
                     {
-                        lineNum++;
 
                         if (line.Contains(searchStr))
                         {
-                            this.AddFound(lineNum);
-                            Console.WriteLine("Found {0} at line {1}", searchStr, lineNum.ToString());
+                            foundFileList.Add(fileInfo);
+                            break;
                         }
                     }
                 }
@@ -54,9 +51,6 @@ namespace FilesSearcherProject
                 Console.WriteLine("The Process failed: {0}", e.ToString());
                 throw;    // propagate exception to caller;
             }
-
-            searchResults = this.GetRows;
-            return searchResults.Count;
         }
     }
 }

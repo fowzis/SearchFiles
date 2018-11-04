@@ -8,11 +8,11 @@ using System.Collections.Concurrent;
 
 namespace FilesSearcherProject
 {
-    class DirectoryTree
+    public class DirectoryTree
     {
         Queue<DirectoryInfo> dirsQueue = new Queue<DirectoryInfo>();
 
-        DirectoryTree(string folderName)
+        public DirectoryTree(string folderName)
         {
             CheckInitialFolder(folderName);
         }
@@ -24,66 +24,71 @@ namespace FilesSearcherProject
                 throw new DirectoryNotFoundException();
         }
 
+        // Synchronious
         // Recursivly populate the ConcurrentQueue collection.
-        //public static void GetDirectories(string startFolder)
-        //{
-        //    List<DirectoryInfo> dirTreeContent = new List<DirectoryInfo>();
+        public List<FileInfo> GetFilesInDirTreeSync(string startFolder)
+        {
+            List<FileInfo> dirResult = new List<FileInfo>();
 
-        //    GetDirectories(startFolder, dirTreeContent);
+            GetDirsSync(startFolder, dirResult);
 
-        //    return dirTreeContent;
-        //}
+            return dirResult;
+        }
 
         /// <summary>
-        /// get all directory under a specified existing directory
+        /// get all directory under a specified existing directory - Synchronious
         /// Assumption is that the initial directory already exists
         /// </summary>
         /// <param name="startFolder"></param>
         /// <returns></returns>
-        private void GetDirList(string startFolder, List<DirectoryInfo> results)
+        private void GetDirsSync(string startFolder, List<FileInfo> foundFiles)
         {
             DirectoryInfo[] dirInfoArr = null;
-            DirectoryInfo di = null;
+            DirectoryInfo dirInfo = null;
 
             try
             {
                 // Get Reference to the Directory
-                di = new DirectoryInfo(startFolder);
+                dirInfo = new DirectoryInfo(startFolder);
 
                 // Get array od subdirectories
-                dirInfoArr = di.GetDirectories();
+                dirInfoArr = dirInfo.GetDirectories();
 
                 // If empty, return
                 if (dirInfoArr.Length == 0)
                     return;
             }
-            catch (UnauthorizedAccessException ex)
+            catch (UnauthorizedAccessException)
             {
-                Console.WriteLine(ex);
                 return;
             }
-            catch (PathTooLongException ex)
+            catch (PathTooLongException)
             {
-                Console.WriteLine(ex);
                 return;
             }
-            catch (DirectoryNotFoundException ex)
+            catch (DirectoryNotFoundException)
             {
-                Console.WriteLine(ex);
                 return;
             }
 
             foreach (var dir in dirInfoArr)
             {
                 // Recursevely check all subfolders
-                GetDirList(dir.Name, results);
+                GetDirsSync(dir.FullName, foundFiles);
             }
 
             // Reach here once all subdirectories have been visited
-            //foreach (var item in di.GetFiles)
-            //{
+            // Once at a leaf directory node, enumerate contained files and add them to the result list
 
-            //}
+            // Here dirInfo points to the current directory node
+            // Obtain the string names of all the elements within myEnum 
+            String[] fileExt = Enum.GetNames(typeof(FileType));
+            foreach (var ext in fileExt)
+            {
+                foundFiles.AddRange(dirInfo.EnumerateFiles("*."+ext));
+                if (foundFiles.Count > 0)
+                    continue;
+            }
         }
     }
 }

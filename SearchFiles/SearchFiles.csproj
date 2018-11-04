@@ -48,8 +48,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DirectoryEnumerator.cs" />
-    <Compile Include="FileInfo.cs" />
+    <Compile Include="DirectoryTree.cs" />
+    <Compile Include="Globals.cs" />
     <Compile Include="FileSearchBase.cs" />
     <Compile Include="FileSearchFactory.cs" />
     <Compile Include="FileSearchPDF.cs" />
